@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Arcanoid</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>Arcanoid game</h1>
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
+    
+    <script>
+        var canvas, canvasContext;
+        var ballX = 75;
+        var ballSpeedX = 2;
+        var ballY = 75;
+        var ballSpeedY = 7;
+        var ballRadius = 10;
+        const PADDLE_WIDTH = 100;
+        const PADDLE_HEIGHT = 10;
+        var paddleX = 400;
+        const PADDLE_LEVEL = 60;
+        var mouseX, mouseY;
+        
+        const brick_w = 100;
+        const brick_h = 50;
+        const bricksInRow = 8;
+        const bricksInColumn = 5;
+        
+        var bricksArray = [];
+            for(var i=0; i<bricksInRow; i++) {
+                bricksArray[i] = new Array(bricksInColumn);
+            }
+        
+        for(var c=0;c<bricksInColumn;c++){
+                for(var r=0; r<bricksInRow;r++){
+                    bricksArray[c][r] = true;
+                }
+            }
+        
+        
+        
+        window.onload = function(){
+            canvas = document.getElementById("gameCanvas");
+            canvasContext = canvas.getContext('2d');
+            var fps = 30;
+            setInterval(updateAll, 1000/fps);
+            canvas.addEventListener('mousemove',updateMousePos);
+        }
+        
+        function updateMousePos(event){
+            var rect = canvas.getBoundingClientRect();
+            var root = document.documentElement;
+            
+            mouseX = event.clientX - rect.left - root.scrollLeft;
+            mouseY = event.clientY - rect.top - root.scrollTop;
+            paddleX = mouseX - PADDLE_WIDTH/2;
+        }
+        
+        function updateAll(){
+            drawAll();
+            moveAll();
+        }
+        
+        function moveAll(){
+            ballX+=ballSpeedX;
+            ballY+=ballSpeedY;
+            if(ballX-ballRadius <= 0){
+                ballSpeedX*=-1;
+            }
+            if(ballX+ballRadius >= canvas.width){
+                ballSpeedX*=-1;
+            }
+            if(ballY-ballRadius <= 0){
+                ballSpeedY*=-1;
+            }
+            if(ballY>canvas.height-PADDLE_LEVEL-PADDLE_HEIGHT && ballX>paddleX && ballX<paddleX+PADDLE_WIDTH && ballY<canvas.height-PADDLE_LEVEL+PADDLE_HEIGHT){
+                    ballSpeedY*=-1;
+                    var center = paddleX +PADDLE_WIDTH/2;
+                    var distFromCenter = ballX-center;
+                    ballSpeedX = distFromCenter*0.5;
+                
+                }
+            
+            if(ballY>=canvas.height){
+                ballReset();
+            }
+            
+            
+            if(checkBrick(ballX,ballY)){
+                ballSpeedY*=-1;
+            }
+        }
+        
+        function ballReset(){
+            ballX = 500;
+            ballY = 500;
+        }
+        
+        
+        function drawAll(){  
+            colorRect(0,0,canvas.width,canvas.height,'#6581ff');
+            colorCircle(ballX,ballY,ballRadius,'#ffd165');
+            colorRect(paddleX,canvas.height-PADDLE_HEIGHT-PADDLE_LEVEL,PADDLE_WIDTH,PADDLE_HEIGHT,'#ff8465');
+            drawBricks();
+        }
+        
+        function drawBricks(){
+            
+            for(var c=0;c<bricksInColumn;c++){
+                for(var r=0; r<bricksInRow;r++){
+                    if(bricksArray[c][r]){
+                        colorRect(r*brick_w,c*brick_h,brick_w-2,brick_h-2,'#ccc');
+                    }
+                    
+                }
+            }
+            
+        }
+        
+        function checkBrick(x,y){
+            c = Math.floor(y/brick_h);
+            r = Math.floor(x/brick_w);
+            if(bricksArray[c][r]){
+                    bricksArray[c][r] = false;
+                    return true;
+            }
+                }
+
+            
+        
+        
+        function colorRect(topX,topY,width,height,color){
+            canvasContext.fillStyle = color;
+            canvasContext.fillRect(topX,topY,width,height);
+        }
+        
+        function colorCircle(x,y,radius,color){
+            canvasContext.fillStyle = color;
+            canvasContext.beginPath();
+            canvasContext.arc(x,y,radius,0,Math.PI*2,true);
+            canvasContext.fill();
+        }
+        
+        function colorText(showWords,textX,textY,fillColor){
+            canvasContext.fillStyle = fillColor;
+            canvasContext.fillText(showWords,textX,textY);
+        }
+        
+    </script>
+</body>
+</html>
